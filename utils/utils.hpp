@@ -1,4 +1,5 @@
 #pragma once
+#include <iostream>
 #include <utility>
 #include <variant>
 
@@ -17,8 +18,14 @@ public:
   T unwrap() && { return std::move(std::get<T>(data)); }
 
   const E &unwrap_err() const & { return std::get<E>(data); }
-  E &unwrap_err() &{ return std::get<E>(data); }
+  E &unwrap_err() & { return std::get<E>(data); }
   E unwrap_err() && { return std::move(std::get<E>(data)); }
+
+  void cout_err() & {
+    auto err = std::get<E>(data);
+    std::cout << "ERROR CODE: " << err.code << '\n'
+              << "ERROR MESSAGE: " << err.message << '\n';
+  }
 
 private:
   std::variant<T, E> data;

@@ -2,8 +2,10 @@
 #define CONTEXT_HPP
 
 #include "./utils/utils.hpp"
+#include <cstdint>
 #include <string>
 #include <unordered_map>
+#include <utility>
 #include <vector>
 
 struct RedisContextError {
@@ -19,11 +21,11 @@ struct RedisContextError {
 template <typename KeyType, typename ValueType> class RedisContext {
 public:
   RedisContext() = default;
-  using OkType = std::vector<KeyType>;
   using ErrType = RedisContextError;
 
-  Result<OkType, ErrType> get_keys() const {
-    using Ok = RedisContext::OkType;
+  /* get all keys */
+  Result<std::vector<KeyType>, ErrType> get_keys() const {
+    using Ok = std::vector<KeyType>;
     using Err = RedisContext::ErrType;
 
     if (map.empty()) {
@@ -39,6 +41,30 @@ public:
 
     return Result<Ok, Err>::ok(vec);
   };
+
+  Result<uint8_t, ErrType> set(KeyType key, ValueType value) {
+    using Ok = uint8_t;
+    using Err = RedisContext::ErrType;
+
+    if (map.find(key) == map.end()) {
+      map.insert(std::make_pair(key, value));
+      return Result<Ok, Err>::ok(200);
+    } else {
+      return Result<Ok, Err>::err(
+          RedisContextError("Duplicate Key Found", 409));
+    }
+  }
+
+  Result<std::pair<KeyType, ValueType>, ErrType> get(KeyType key) {
+    using Ok = std::pair<KeyType, ValueType>;
+    using Err = RedisContext::ErrType;
+
+    if (auto p = map.find(key); p != map.end()) {
+      return Result<Ok, Err>::ok(std::make_pair(p->first, p->second));
+    } else {
+      return Result<Ok, Err>::err(RedisContextError("Not Found", 404));
+    }
+  }
 
 private:
   std::unordered_map<KeyType, ValueType> map;
