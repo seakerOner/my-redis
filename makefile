@@ -8,9 +8,14 @@ FLAGS = -Wall -Wextra
 my-redis: main.o
 	$(COMPILER) $(BUILDDIR)*.o -o $(BUILDDIR)$(PROJECT)
 
-
-main.o: main.cpp
+main.o: main.cpp utils.o context.o
 	$(COMPILER) $(FLAGS) -c main.cpp -o $(BUILDDIR)main.o
+
+utils.o: ./utils/utils.*
+	$(COMPILER) $(FLAGS) -c ./utils/utils.cpp -o $(BUILDDIR)utils.o
+
+context.o: context.*
+	$(COMPILER) $(FLAGS) -c context.cpp -o $(BUILDDIR)context.o
 
 clean:
 	@echo "Cleaning.."
