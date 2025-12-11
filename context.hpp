@@ -42,6 +42,7 @@ public:
     return Result<Ok, Err>::ok(vec);
   };
 
+  /* set an entry */
   Result<uint8_t, ErrType> set(KeyType key, ValueType value) {
     using Ok = uint8_t;
     using Err = RedisContext::ErrType;
@@ -55,12 +56,25 @@ public:
     }
   }
 
+  /* get an entry */
   Result<std::pair<KeyType, ValueType>, ErrType> get(KeyType key) {
     using Ok = std::pair<KeyType, ValueType>;
     using Err = RedisContext::ErrType;
 
     if (auto p = map.find(key); p != map.end()) {
       return Result<Ok, Err>::ok(std::make_pair(p->first, p->second));
+    } else {
+      return Result<Ok, Err>::err(RedisContextError("Not Found", 404));
+    }
+  }
+
+  /* delete an entry */
+  Result<uint8_t, ErrType> del(KeyType key) {
+    using Ok = uint8_t;
+    using Err = RedisContext::ErrType;
+
+    if (auto p = map.erase(key); p == 1) {
+      return Result<Ok, Err>::ok(200);
     } else {
       return Result<Ok, Err>::err(RedisContextError("Not Found", 404));
     }

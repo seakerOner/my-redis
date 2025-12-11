@@ -36,7 +36,23 @@ int main() {
   }
 
   auto user = user_r.unwrap();
-  std::cout << '{' << user.first << ',' << user.second << "}\n";
+  std::cout << '{' << '"' + user.first + '"' << ',' << '"' + user.second + '"'
+            << "}\n";
+
+  auto del_res = redisCtx.del("name_id1");
+  if (del_res.is_ok()) {
+    std::cout << "Removed! \n";
+    std::cout << res.unwrap() << "\n";
+  } else {
+    del_res.cout_err();
+  }
+
+  std::cout << "Getting the removed user! \n";
+
+  auto user_rr = redisCtx.get("name_id1");
+  if (user_rr.is_err()) {
+    user_rr.cout_err();
+  }
 
   return 0;
 }
