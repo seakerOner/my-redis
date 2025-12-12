@@ -1,23 +1,15 @@
 #include "./utils/utils.hpp"
 #include "context.hpp"
 #include <iostream>
+#include <string>
 
 int main() {
   RedisContext<std::string, std::string> redisCtx;
   std::cout << "Hello, Redis\n";
 
-  auto res = redisCtx.set("name_id1", "alex");
-  if (res.is_err()) {
-    res.cout_err();
-  }
-  auto res2 = redisCtx.set("name_id2", "joao");
-  if (res2.is_err()) {
-    res2.cout_err();
-  }
-  auto res3 = redisCtx.set("name_id2", "joao");
-  if (res3.is_err()) {
-    res3.cout_err();
-  }
+  redisCtx.set("name_id1", "alex");
+  redisCtx.set("name_id2", "joao");
+  redisCtx.set("name_id2", "joao");
 
   auto keys = redisCtx.get_keys();
 
@@ -42,7 +34,7 @@ int main() {
   auto del_res = redisCtx.del("name_id1");
   if (del_res.is_ok()) {
     std::cout << "Removed! \n";
-    std::cout << res.unwrap() << "\n";
+    std::cout << std::to_string(del_res.unwrap()) << "\n";
   } else {
     del_res.cout_err();
   }
