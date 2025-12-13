@@ -6,6 +6,7 @@
 int main() {
   RedisContext<std::string, std::string> redisCtx;
   std::cout << "Hello, Redis\n";
+  redisCtx.set_persistor(true);
 
   redisCtx.set("name_id1", "alex");
   redisCtx.set("name_id2", "joao");
