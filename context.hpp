@@ -21,6 +21,48 @@ struct RedisContextError {
   }
 };
 
+struct Persistor {
+  using Err = RedisContextError;
+
+public:
+  explicit Persistor() = default;
+  ~Persistor() {
+    historystream.close();
+    logger.close();
+    // TODO: Optimize logger file for values that are "expired"
+  };
+
+  void change_dirpath(std::string new_dirpath) {
+    dirpath = new_dirpath;
+    history = dirpath + "/history";
+  }
+  void change_dirname(std::string new_dirname) { dir_name = new_dirname; }
+
+  std::string get_dirpath() const {
+    return std::string(dirpath) + std::string(dir_name);
+  }
+  Result<int, Err> append_logger(std::string command) {
+    using Ok = int;
+    if (logger.fail()) {
+      // TODO: create fallback to create a new logger file and see the name we
+      // need to create based on `history` file
+			
+      // logger(dirpath + dir_name + logger_in_use);
+      return Result<Ok, Err>::err(
+          RedisContextError("Logger is bad", -1));
+    }
+    // TODO: Write to file the command
+    return Result<Ok, Err>::ok(0);
+  }
+
+private:
+  std::string logger_in_use = "snapshot";
+  std::string dirpath = "~/Desktop/";
+  std::string history = "/history";
+  std::string dir_name = "MYRADIS_PERSISTOR";
+  // std::ofstream historystream{};
+  // std::ofstream logger{};
+};
 template <typename KeyType, typename ValueType> struct EntryList;
 template <typename KeyType, typename ValueType> struct List;
 
@@ -168,7 +210,7 @@ public:
         map_[key] += 1;
         return Result<Ok, Err>::ok(map_[key]);
       } else if constexpr (std::is_same_v<Value_t, std::string>) {
-        long val = std::stoi(p->second);
+        long val = std::stol(p->second);
         val += 1;
         map_[key] = std::to_string(val);
         return Result<Ok, Err>::ok(map_[key]);
@@ -191,7 +233,7 @@ public:
         map_[key] -= 1;
         return Result<Ok, Err>::ok(map_[key]);
       } else if constexpr (std::is_same_v<Value_t, std::string>) {
-        long val = std::stoi(p->second);
+        long val = std::stol(p->second);
         val -= 1;
         map_[key] = std::to_string(val);
         return Result<Ok, Err>::ok(map_[key]);
@@ -230,9 +272,30 @@ public:
   /* Number of entries in deque */
   size_t size_list() const { return list_.size(); }
 
+  /* Activate persistance (false by default) */
+  int set_persistor(bool b) {
+    usePersistor = b;
+    return 200;
+  }
+
+  /* Change the path where the directory for the persistor will be made */
+  int change_persistor_dirpath(std::string new_dirpath) {
+    persistor_.change_dirpath(new_dirpath);
+    return 200;
+  }
+
+  /* Change the name of the directory used by the persistor */
+  int change_persistor_dirname(std::string new_dirname) {
+    persistor_.change_dirname(new_dirname);
+    return 200;
+  }
+  std::string get_persistor_path() const { return persistor_.get_dirpath(); }
+
 private:
   std::unordered_map<KeyType, ValueType> map_;
   std::unordered_map<KeyType, std::deque<ValueType>> list_;
+  Persistor persistor_;
+  bool usePersistor = false;
 };
 
 #endif
