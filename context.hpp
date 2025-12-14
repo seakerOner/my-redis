@@ -58,7 +58,6 @@ public:
     }
 
     dirpath = new_dirpath;
-    history = dirpath + "/history";
     init();
 
     return Result<Ok, Err>::ok(200);
